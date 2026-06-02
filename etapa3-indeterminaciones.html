@@ -28,6 +28,10 @@ strong{color:var(--navy)}em{font-style:italic}
 sup{font-size:.7em;vertical-align:super}sub{font-size:.7em;vertical-align:sub}
 .container{max-width:980px;margin:0 auto;padding:0 20px}
 
+.topbar-inner{max-width:980px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.campus-link{color:#7dd3fc;text-decoration:none;font-weight:700;white-space:nowrap;display:inline-flex;align-items:center;gap:5px;transition:color .2s;font-size:12px}
+.campus-link:hover{color:#bae6fd}
+@media(max-width:600px){.topbar-inner{font-size:11px}.campus-link span.lbl{display:none}}
 .topbar{background:var(--navy);color:#94a3b8;font-size:12px;font-weight:600;letter-spacing:.04em;padding:8px 0;text-align:center}
 .topbar b{color:#7dd3fc}
 
@@ -176,8 +180,6 @@ sup{font-size:.7em;vertical-align:super}sub{font-size:.7em;vertical-align:sub}
 .sint-fill{display:inline-block;min-width:120px;border-bottom:2px dashed var(--g300);color:var(--warn);font-weight:700}
 .sint-done{display:none;margin-top:14px;background:var(--ok-bg);border:1px solid #6ee7b7;border-radius:var(--r);padding:14px 16px;font-size:14px;color:#065f46}
 .sint-done.show{display:flex;gap:10px;align-items:flex-start;animation:rise .4s ease both}
-
-.proto-note{background:#fff7ed;border:1px dashed #fdba74;border-radius:var(--r);padding:12px 16px;font-size:13px;color:#9a3412;margin-bottom:22px;display:flex;gap:10px;align-items:flex-start}
 @media(max-width:520px){
   .card,.rung{padding:17px}
   .ltable{grid-template-columns:1fr}
@@ -185,11 +187,21 @@ sup{font-size:.7em;vertical-align:super}sub{font-size:.7em;vertical-align:sub}
   .predict-actions .btn,.explain-next .btn,.rung-cta .btn,.lstep-next{width:auto}
   .lstep{flex-direction:column;gap:6px}.lstep-label{width:auto;align-self:flex-start}
 }
+
+.site-footer{background:var(--navy);color:#94a3b8;padding:34px 20px 30px;text-align:center;margin-top:50px}
+.footer-quote{font-family:'Fraunces',Georgia,serif;font-style:italic;font-size:1.15rem;color:#e0f2fe;max-width:560px;margin:0 auto 6px}
+.footer-rule{width:60px;height:1px;background:rgba(255,255,255,.25);margin:14px auto}
+.footer-profs{font-size:13.5px;font-weight:700;color:#bfdbfe;margin-bottom:18px}
+.footer-lab{display:inline-flex;align-items:center;gap:7px;font-family:'Fraunces',Georgia,serif;font-weight:700;font-size:1.05rem}
+.footer-lab .lab-dot{width:8px;height:8px;border-radius:50%;background:#c2671e}
+.footer-lab .lab-w1{color:#e0f2fe}
+.footer-lab .lab-best{color:#e0871e}
+.footer-lab .lab-ia{color:#60a5fa}
 </style>
 </head>
 <body>
 
-<div class="topbar"><b>INSPT · UTN</b> &nbsp;·&nbsp; Análisis Matemático I &nbsp;·&nbsp; Prof. Ariel Cardozo</div>
+<div class="topbar"><div class="topbar-inner"><span><b>INSPT · UTN</b> &nbsp;·&nbsp; Análisis Matemático I &nbsp;·&nbsp; Prof. Ariel Cardozo · Prof. Pablo Mosquera</span><a class="campus-link" href="index.html" target="campus_u2">← <span class="lbl">Campus</span></a></div></div>
 
 <header class="hero">
   <div class="container">
@@ -213,8 +225,7 @@ sup{font-size:.7em;vertical-align:super}sub{font-size:.7em;vertical-align:sub}
 </nav>
 
 <div class="wrap"><div class="container">
-
-  <div class="proto-note"><span>🧪</span><div><strong>Prototipo de andamiaje — Etapa 3.</strong> Tres herramientas para salvar 0/0, cada una con su propia escalera de desvanecimiento (resuelto → completás → solo): <strong>factorización</strong>, <strong>conjugado</strong> y el <strong>límite trigonométrico</strong>. Todas comparten la misma idea: 0/0 es señal de reescribir, no de rendirse.</div></div>
+</div>
 
   <!-- DIAGNÓSTICO -->
   <section class="card" id="sec-diag">
@@ -791,7 +802,13 @@ function updateRuta(){
   const map=['diag','poe','ladder','conj','trig','quiz','sint'];
   document.querySelectorAll('#ruta .rstep').forEach((el,i)=>el.classList.toggle('done',DONE[map[i]]));
 }
-document.addEventListener('click',e=>{const el=e.target.closest('[data-go]');if(el){const t=document.getElementById(el.dataset.go);if(t)t.scrollIntoView({behavior:'smooth',block:'start'});}});
+var navLock=false, navLockTimer=null;
+document.addEventListener('click',e=>{const el=e.target.closest('[data-go]');if(el){
+  const t=document.getElementById(el.dataset.go);if(t)t.scrollIntoView({behavior:'smooth',block:'start'});
+  const steps=[...document.querySelectorAll('#ruta .rstep')];
+  const idx=steps.findIndex(s=>s.dataset.go===el.dataset.go);
+  if(idx>=0){steps.forEach((s,i)=>s.classList.toggle('active',i===idx));navLock=true;if(navLockTimer)clearTimeout(navLockTimer);navLockTimer=setTimeout(()=>{navLock=false;},1000);}
+}});
 
 /* ===================== INIT ===================== */
 document.addEventListener('DOMContentLoaded',()=>{
@@ -802,9 +819,16 @@ document.addEventListener('DOMContentLoaded',()=>{
   drawTrig();               // dibuja detrás del blur del POE trig
   renderQuiz();
   const secs=[['sec-diag',0],['poe-zero',1],['sec-ladder',2],['sec-conj',3],['sec-trig',4],['sec-quiz',5],['sec-sint',6]];
-  const obs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){const idx=secs.find(s=>s[0]===e.target.id);if(!idx)return;document.querySelectorAll('#ruta .rstep').forEach((el,i)=>el.classList.toggle('active',i===idx[1]));}});},{rootMargin:'-40% 0px -55% 0px'});
+  const obs=new IntersectionObserver(es=>{if(navLock)return;es.forEach(e=>{if(e.isIntersecting){const idx=secs.find(s=>s[0]===e.target.id);if(!idx)return;document.querySelectorAll('#ruta .rstep').forEach((el,i)=>el.classList.toggle('active',i===idx[1]));}});},{rootMargin:'-40% 0px -55% 0px'});
   secs.forEach(s=>{const el=document.getElementById(s[0]);if(el)obs.observe(el);});
 });
 </script>
+
+<footer class="site-footer">
+  <div class="footer-quote">"La matemática no exige genios, exige constancia."</div>
+  <div class="footer-rule"></div>
+  <div class="footer-profs">Prof. Ariel Cardozo · Prof. Pablo Mosquera</div>
+  <div class="footer-lab"><span class="lab-dot"></span><span class="lab-w1">laboratorio</span><span class="lab-best">best</span><span class="lab-ia">-IA</span></div>
+</footer>
 </body>
 </html>
